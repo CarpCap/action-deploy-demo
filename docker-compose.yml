@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     image: myapp:latest # 镜像名称
     environment:
-      JVM_OPTS: "-Xmx256m -Xms32m "
+      JAVA_OPTS: "-Xmx256m -Xms32m "
     restart: always  # 总是重启
     container_name: myapp #容器名称
     ports:    # 指定端口映射
