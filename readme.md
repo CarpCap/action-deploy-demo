@@ -5,7 +5,7 @@
 
 ## 项目地址
 
-*   [action文件路径](https://github.com/liyu3432/action-deploy-demo/blob/main/.github/workflows/main.yml)
+*   [action文件路径](https://github.com/CarpCap/action-deploy-demo/blob/main/.github/workflows/main.yml)
 *   [文章地址](https://juejin.cn/post/7458303492210393139)
 
 
