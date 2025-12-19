@@ -3,12 +3,22 @@
 
 name: 手动部署
 
-on: 
+on:
   workflow_dispatch:  # 手动触发
+
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # 设置超时时间为 10 分钟，适当增加构建时间
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}     # 服务器 IP
+      SERVER_USER: ${{ secrets.SERVER_USER }}     # 服务器用户名
+      SERVER_PASS: ${{ secrets.SERVER_PASS }}     # 服务器密码
+      IMAGE_NAME: trans-adapter                   # Docker 镜像名称
+      TAG: latest                                 # 镜像标签
+      DEPLOY_PATH: /usr/local/apps/myApp/ # 部署路径
+
     steps:
       # 1. 检出代码
       - name: 检出代码
@@ -20,6 +30,7 @@ jobs:
         with:
           java-version: '8'  # 根据你的项目选择 Java 版本
           distribution: 'temurin'
+
       # 3. 编译项目
       - name: 编译项目
         run: mvn clean package
@@ -28,21 +39,26 @@ jobs:
       - name: 上传文件到服务器
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_HOST }}     # 引用 GitHub Secrets 中的服务器 IP
-          username: ${{ secrets.SERVER_USER }} # 引用 GitHub Secrets 中的用户名
-          password: ${{ secrets.SERVER_PASS }} # 引用 GitHub Secrets 中的密码
+          host: ${{ env.SERVER_HOST }}     # 引用环境变量中的服务器 IP
+          username: ${{ env.SERVER_USER }} # 引用环境变量中的服务器用户名
+          password: ${{ env.SERVER_PASS }} # 引用环境变量中的服务器密码
           source: "./docker-compose.yml,./Dockerfile,./target/*.jar"
-          target: /usr/local/apps/myApp/    # 上传到服务器的目标目录
-          overwrite: true  #文件覆盖模式
+          target: ${{ env.DEPLOY_PATH }}   # 使用环境变量部署路径
+          overwrite: true
 
-      # 5. 通过ssh执行shell命令，在服务器上构建镜像并部署
+      # 5. 在服务器上构建镜像并部署
       - name: 在服务器上构建镜像并部署
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SERVER_HOST }}     # 引用 GitHub Secrets 中的服务器 IP
-          username: ${{ secrets.SERVER_USER }} # 引用 GitHub Secrets 中的用户名
-          password: ${{ secrets.SERVER_PASS }} # 引用 GitHub Secrets 中的密码
+          host: ${{ env.SERVER_HOST }}     # 引用环境变量中的服务器 IP
+          username: ${{ env.SERVER_USER }} # 引用环境变量中的服务器用户名
+          password: ${{ env.SERVER_PASS }} # 引用环境变量中的服务器密码
           script: |
-            cd /usr/local/apps/myApp/
+            cd ${{ env.DEPLOY_PATH }}           # 使用环境变量部署路径
+
+            # 构建镜像
+            docker build -t ${{ env.IMAGE_NAME }}:${{ env.TAG }} . || { echo "Docker build failed"; exit 1; }
+
             docker-compose down                  # 停止现有服务
-            docker-compose up -d --build         # 以守护模式启动服务 并且强制构建一次镜像
+            docker-compose up -d                 # 以守护模式启动服务
+            
