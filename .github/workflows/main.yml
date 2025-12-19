@@ -15,7 +15,7 @@ jobs:
       SERVER_HOST: ${{ secrets.SERVER_HOST }}     # 服务器 IP
       SERVER_USER: ${{ secrets.SERVER_USER }}     # 服务器用户名
       SERVER_PASS: ${{ secrets.SERVER_PASS }}     # 服务器密码
-      IMAGE_NAME: trans-adapter                   # Docker 镜像名称
+      IMAGE_NAME: app-test                   # Docker 镜像名称
       TAG: latest                                 # 镜像标签
       DEPLOY_PATH: /usr/local/apps/myApp/ # 部署路径
 
